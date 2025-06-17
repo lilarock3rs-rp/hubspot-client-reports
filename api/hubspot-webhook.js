@@ -1,4 +1,3 @@
-// api/hubspot-webhook.js
 import { obtenerClienteYDeals, actualizarReportUrl } from '../lib/hubspot.js';
 import { crearNuevoGoogleSheet, actualizarGoogleSheet } from '../lib/googlesheets.js';
 
@@ -14,9 +13,9 @@ export default async function handler(req, res) {
     const webhookData = req.body;
     
     // Verificar que es el webhook del Custom Object Cliente y propiedad "report"
-    if (webhookData.objectType === '2-46236743' && 
+    if (webhookData.objectTypeId === '2-46236743' && 
         webhookData.propertyName === 'report' && 
-        webhookData.propertyValue === 'yes') {
+        webhookData.propertyValue === 'true') {
       
       const clientId = webhookData.objectId;
       console.log(`Processing client ID: ${clientId}`);
