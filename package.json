@@ -1,9 +1,12 @@
 {
   "name": "hubspot-client-reports",
   "version": "1.0.0",
-  "type": "module",
+  "description": "HubSpot Client Reports integration with Google Sheets",
+  "main": "index.js",
   "scripts": {
-    "build": "echo 'Serverless functions ready'"
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "node index.js"
   },
   "dependencies": {
     "googleapis": "^126.0.1"
