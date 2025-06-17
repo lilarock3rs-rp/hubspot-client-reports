@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/hubspot-webhook.js": {
+      "maxDuration": 30
+    }
+  }
+}
