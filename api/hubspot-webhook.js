@@ -1,9 +1,9 @@
 // api/hubspot-webhook.js
-import { obtenerClienteYDeals, actualizarReportUrl } from '../lib/hubspot.js';
-import { crearNuevoGoogleSheet, actualizarGoogleSheet } from '../lib/googlesheets.js';
+import { getClientAndDeals, updateReportUrl } from '../lib/hubspot.js';
+import { createNewGoogleSheet, updateGoogleSheet } from '../lib/googlesheets.js';
 
 export default async function handler(req, res) {
-  // Verificar que sea POST
+  // Verify it's a POST request
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -13,12 +13,12 @@ export default async function handler(req, res) {
     
     let webhookData = req.body;
     
-    // HubSpot puede enviar un array de eventos
+    // HubSpot may send an array of events
     if (Array.isArray(webhookData) && webhookData.length > 0) {
-      webhookData = webhookData[0]; // Tomar el primer evento
+      webhookData = webhookData[0]; // Take the first event
     }
     
-    // Verificar que es el webhook del Custom Object Cliente y propiedad "report"
+    // Verify this is the webhook for Custom Object Client and "report" property
     if (webhookData.objectTypeId === '2-46236743' && 
         webhookData.propertyName === 'report' && 
         webhookData.propertyValue === 'true') {
@@ -26,29 +26,29 @@ export default async function handler(req, res) {
       const clientId = webhookData.objectId;
       console.log(`Processing client ID: ${clientId}`);
       
-      // Obtener datos del cliente y sus deals
-      const clientData = await obtenerClienteYDeals(clientId);
+      // Get client data and associated deals
+      const clientData = await getClientAndDeals(clientId);
       
       let sheetUrl;
       let spreadsheetId;
       
-      // Verificar si ya existe un report_url
+      // Check if report_url already exists
       if (!clientData.client.reportUrl || clientData.client.reportUrl.trim() === '') {
         console.log('No report URL found, creating new Google Sheet');
         
-        // Crear nuevo Google Sheet
-        const newSheet = await crearNuevoGoogleSheet(clientData.client.name);
+        // Create new Google Sheet
+        const newSheet = await createNewGoogleSheet(clientData.client.name);
         spreadsheetId = newSheet.spreadsheetId;
         sheetUrl = newSheet.url;
         
-        // Actualizar el report_url en HubSpot
-        await actualizarReportUrl(clientId, sheetUrl);
+        // Update report_url in HubSpot
+        await updateReportUrl(clientId, sheetUrl);
         
         console.log(`New sheet created: ${sheetUrl}`);
       } else {
         console.log('Existing report URL found, using existing sheet');
         
-        // Extraer spreadsheetId de la URL existente
+        // Extract spreadsheetId from existing URL
         sheetUrl = clientData.client.reportUrl;
         const match = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
         if (!match) {
@@ -57,8 +57,8 @@ export default async function handler(req, res) {
         spreadsheetId = match[1];
       }
       
-      // Actualizar el Google Sheet (nuevo o existente)
-      await actualizarGoogleSheet(clientData, spreadsheetId);
+      // Update the Google Sheet (new or existing)
+      await updateGoogleSheet(clientData, spreadsheetId);
       
       console.log('Google Sheet updated successfully');
       
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       });
     }
     
-    // Si no es el webhook que esperamos, responder OK pero no procesar
+    // If it's not the webhook we're expecting, respond OK but don't process
     return res.status(200).json({ message: 'Webhook received but not processed' });
     
   } catch (error) {
