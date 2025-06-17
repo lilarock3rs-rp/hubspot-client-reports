@@ -3,5 +3,11 @@
     "api/hubspot-webhook.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "builds": [
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    }
+  ]
 }
